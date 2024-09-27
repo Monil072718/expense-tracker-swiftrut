@@ -1,20 +1,33 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate, useParams } from 'react-router-dom';
 import ExpenseForm from '../components/ExpenseForm';
 
 const EditExpense = () => {
-  const { id } = useParams(); // Get expense ID from the URL params
+  const { id } = useParams();
+  const [expense, setExpense] = useState(null);
+  const navigate = useNavigate();
 
-  const handleEditExpense = (updatedExpense) => {
-    // Call your backend API to update the expense (using Axios)
-    console.log('Updating expense with ID:', id, updatedExpense);
+  useEffect(() => {
+    const fetchExpense = async () => {
+      const response = await axios.get(`/api/expenses/${id}`);
+      setExpense(response.data);
+    };
+
+    fetchExpense();
+  }, [id]);
+
+  const handleEditExpense = async (updatedExpense) => {
+    await axios.patch(`/api/expenses/${id}`, updatedExpense);
+    navigate('/');
   };
+
+  if (!expense) return <div>Loading...</div>;
 
   return (
     <div>
-      <h2>Edit Expense</h2>
-      {/* You would fetch the expense data here and pass it to the form */}
-      <ExpenseForm onSubmit={handleEditExpense} />
+      <h1>Edit Expense</h1>
+      <ExpenseForm onSubmit={handleEditExpense} initialData={expense} />
     </div>
   );
 };

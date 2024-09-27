@@ -4,42 +4,40 @@ import { Link, useNavigate } from 'react-router-dom';
 const Navbar = () => {
   const navigate = useNavigate();
 
-  // Check if the user is logged in by checking if a token exists in localStorage
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('authToken'); // Get the token to check if the user is logged in
 
   const handleLogout = () => {
-    // Remove the token from localStorage to log out the user
-    localStorage.removeItem('token');
-    navigate('/login'); // Redirect to the login page after logging out
+    localStorage.removeItem('authToken'); // Clear token on logout
+    navigate('/login'); // Redirect to login page
   };
 
   return (
-    <nav>
-      <ul>
-        <li>
-          <Link to="/">Dashboard</Link>
-        </li>
-        <li>
-          <Link to="/add">Add Expense</Link>
-        </li>
-
-        {!token ? (
-          // Show Login and Register buttons if the user is NOT logged in
+    <nav className="bg-gray-800 p-4 text-white flex justify-between">
+      <div>
+        <Link to="/" className="mr-4 hover:text-yellow-500">Home</Link>
+        {token && (
           <>
-            <li>
-              <Link to="/login">Login</Link>
-            </li>
-            <li>
-              <Link to="/register">Register</Link>
-            </li>
+            <Link to="/add-expense" className="mr-4 hover:text-yellow-500">Add Expense</Link>
+            <Link to="/statistics" className="mr-4 hover:text-yellow-500">Statistics</Link>
           </>
-        ) : (
-          // Show Logout button if the user IS logged in
-          <li>
-            <button onClick={handleLogout}>Logout</button>
-          </li>
         )}
-      </ul>
+      </div>
+      
+      <div>
+        {token ? (
+          <button 
+            onClick={handleLogout} 
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Logout
+          </button>
+        ) : (
+          <>
+            <Link to="/login" className="mr-4 hover:text-yellow-500">Login</Link>
+            <Link to="/register" className="hover:text-yellow-500">Register</Link>
+          </>
+        )}
+      </div>
     </nav>
   );
 };

@@ -1,25 +1,49 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Dashboard from './pages/Dashboard';
+import Home from './pages/Home';
 import AddExpense from './pages/AddExpense';
-import EditExpense from './pages/EditExpense';
+import Statistics from './pages/Statistics';
+import Register from './pages/Register';
 import Login from './components/Login';
-import Register from './components/Register';
+import Navbar from './components/Navbar';
+import PrivateRoute from './components/PrivateRoute';
 
-const App = () => {
+function App() {
   return (
     <Router>
       <Navbar />
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/add" element={<AddExpense />} />
-        <Route path="/edit/:id" element={<EditExpense />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* Protected Routes */}
+        <Route 
+          path="/" 
+          element={
+            <PrivateRoute>
+              <Home />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/add-expense" 
+          element={
+            <PrivateRoute>
+              <AddExpense />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/statistics" 
+          element={
+            <PrivateRoute>
+              <Statistics />
+            </PrivateRoute>
+          } 
+        />
       </Routes>
     </Router>
   );
-};
+}
 
 export default App;

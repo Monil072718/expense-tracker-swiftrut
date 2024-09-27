@@ -1,31 +1,50 @@
 const express = require('express');
-const router = express.Router();
-const { getExpenses, updateExpense, deleteExpense } = require('../controllers/expenseController');
-const authMiddleware = require('../middlewares/authMiddleware');
-const { addExpense } = require('../controllers/expenseController'); 
+const { addExpense, getExpenses, updateExpense, deleteExpense, addBulkExpenses } = require('../controllers/expenseController');
 const { protect } = require('../middlewares/authMiddleware');
+const router = express.Router();
+const multer = require('multer');
+const Expense = require('../models/expenseModel');
 
-// @route   POST /api/expenses
-// @desc    Add a new expense
-router.post('/', authMiddleware, addExpense);
+const upload = multer({ dest: 'uploads/' });
+// Add Expense
+router.post('/', protect, addExpense);
+router.post('/bulk-upload', protect, upload.single('file'), addBulkExpenses);
 
-// @route   GET /api/expenses
-// @desc    Get all expenses for a user
-router.get('/', authMiddleware, getExpenses);
-// router.post('/', protect, addExpense); 
-// const { addExpense } = require('../controllers/expenseController');
-// const { protect } = require('../middleware/authMiddleware');
+// Get Expenses
+router.get('/', protect, getExpenses);
 
-console.log(typeof addExpense); // Should log 'function'
-console.log(typeof protect);    // Should log 'function'
+// Update Expense
+router.patch('/:id', protect, updateExpense);
 
+// Delete Expense
+router.delete('/:id', protect, deleteExpense);
 
-// @route   PUT /api/expenses/:id
-// @desc    Update an expense
-router.put('/:id', authMiddleware, updateExpense);
-
-// @route   DELETE /api/expenses/:id
-// @desc    Delete an expense
-router.delete('/:id', authMiddleware, deleteExpense);
+router.post('/bulk-delete', protect, async (req, res) => {
+    try {
+      const { ids } = req.body;
+  
+      // Ensure ids is an array and not empty
+      if (!ids || ids.length === 0) {
+        return res.status(400).json({ message: 'No IDs provided' });
+      }
+  
+      // Delete multiple expenses matching the provided IDs and belonging to the authenticated user
+      const result = await Expense.deleteMany({
+        _id: { $in: ids },
+        user: req.user.id, // Ensures user can only delete their own expenses
+      });
+  
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ message: 'No expenses found to delete' });
+      }
+  
+      res.status(200).json({ message: 'Expenses deleted successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Failed to delete expenses', error });
+    }
+  });
+  
+  module.exports = router;
 
 module.exports = router;
